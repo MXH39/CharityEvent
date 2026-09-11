@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Charity Event Home</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="search.html">Search Events</a>
+    </div>
+    <div class="container">
+        <div class="box">
+            <h2>Welcome to City Charity Organization</h2>
+            <p><strong>Mission：</strong>We organize various charity events to raise funds for vulnerable groups, including education assistance, elderly care, animal protection and disaster relief.</p>
+            <p><strong>Contact：</strong>charity@city.org | +61 123 456 789</p>
+        </div>
+        <h3>Upcoming & Active Charity Events</h3>
+        <div id="eventList"></div>
+    </div>
+    <script>
+        window.onload = async function(){
+            const res = await fetch("http://localhost:3000/api/home-events");
+            const events = await res.json();
+            const listDom = document.getElementById("eventList");
+            if(events.length === 0){
+                listDom.innerHTML = "<p>No upcoming events currently</p>";
+                return;
+            }
+            events.forEach(item=>{
+                listDom.innerHTML += `
+                    <div class="box">
+                        <h4>${item.event_name}</h4>
+                        <p>Category：${item.cat_name}</p>
+                        <p>Date：${item.event_date}</p>
+                        <p>Location：${item.event_location}</p>
+                        <p>Ticket Price：${item.ticket_price === 0 ? 'Free' : '$'+item.ticket_price}</p>
+                        <a href="detail.html?id=${item.event_id}"><button>View Details</button></a>
+                    </div>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
