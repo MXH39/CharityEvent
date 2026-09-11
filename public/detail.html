@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Event Detail</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="search.html">Search Events</a>
+    </div>
+    <div class="container">
+        <div id="detailBox" class="box"></div>
+        <button id="registerBtn" style="margin-top:20px">Register Now</button>
+    </div>
+    <div class="modal" id="modal">
+        <p>This feature is currently under construction.</p>
+        <button id="closeModal" style="margin-top:15px">OK</button>
+    </div>
+    <script>
+        window.onload = async function(){
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get("id");
+            const res = await fetch(`http://localhost:3000/api/event-detail/${eventId}`);
+            const detail = await res.json();
+            document.getElementById("detailBox").innerHTML = `
+                <h2>${detail.event_name}</h2>
+                <p><strong>Category：</strong>${detail.cat_name}</p>
+                <p><strong>Event Date：</strong>${detail.event_date}</p>
+                <p><strong>Location：</strong>${detail.event_location}</p>
+                <p><strong>Event Purpose & Description：</strong>${detail.event_description}</p>
+                <p><strong>Ticket Price：</strong>${detail.ticket_price === 0 ? 'Free Admission' : '$'+detail.ticket_price}</p>
+                <p><strong>Charity Goal：</strong>$${detail.charity_goal}</p>
+                <p><strong>Current Progress：</strong>$${detail.charity_progress} (${Math.round(detail.charity_progress/detail.charity_goal*100)}%)</p>
+            `;
+        }
+        const modal = document.getElementById("modal");
+        document.getElementById("registerBtn").addEventListener("click",function(){
+            modal.classList.add("show");
+        });
+        document.getElementById("closeModal").addEventListener("click",function(){
+            modal.classList.remove("show");
+        });
+    </script>
+</body>
+</html>
