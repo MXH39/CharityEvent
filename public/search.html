@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Charity Events</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="search.html">Search Events</a>
+    </div>
+    <div class="container">
+        <h3>Search Active Charity Events</h3>
+        <div class="box">
+            <form id="searchForm">
+                <div>
+                    <label>Event Date：</label>
+                    <input type="date" name="date" id="date">
+                </div>
+                <div>
+                    <label>Location：</label>
+                    <input type="text" name="location" id="location" placeholder="Input location">
+                </div>
+                <div>
+                    <label>Event Category：</label>
+                    <select id="catId">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+                <div style="margin-top:15px">
+                    <button type="submit">Search</button>
+                    <button type="reset" id="clearBtn">Clear Filters</button>
+                </div>
+            </form>
+        </div>
+        <div class="error" id="errorMsg"></div>
+        <div id="searchResult"></div>
+    </div>
+    <script>
+        window.onload = async function(){
+            const catRes = await fetch("http://localhost:3000/api/categories");
+            const cats = await catRes.json();
+            const catDom = document.getElementById("catId");
+            cats.forEach(item=>{
+                catDom.innerHTML += `<option value="${item.cat_id}">${item.cat_name}</option>`;
+            });
+        }
+        document.getElementById("searchForm").addEventListener("submit",async function(e){
+            e.preventDefault();
+            document.getElementById("errorMsg").innerText = "";
+            const date = document.getElementById("date").value;
+            const location = document.getElementById("location").value;
+            const cat_id = document.getElementById("catId").value;
+            const resultDom = document.getElementById("searchResult");
+            resultDom.innerHTML = "";
+            let params = new URLSearchParams();
+            if(date) params.append("date",date);
+            if(location) params.append("location",location);
+            if(cat_id) params.append("cat_id",cat_id);
+            const res = await fetch(`http://localhost:3000/api/search-events?${params.toString()}`);
+            const list = await res.json();
+            if(list.length === 0){
+                document.getElementById("errorMsg").innerText = "No matching events found!";
+                return;
+            }
+            list.forEach(item=>{
+                resultDom.innerHTML += `
+                    <div class="box">
+                        <h4>${item.event_name}</h4>
+                        <p>Category：${item.cat_name}</p>
+                        <p>Date：${item.event_date}</p>
+                        <p>Location：${item.event_location}</p>
+                        <a href="detail.html?id=${item.event_id}"><button>View Details</button></a>
+                    </div>
+                `;
+            });
+        });
+        document.getElementById("clearBtn").addEventListener("click",function(){
+            document.getElementById("searchForm").reset();
+            document.getElementById("errorMsg").innerText = "";
+            document.getElementById("searchResult").innerHTML = "";
+        });
+    </script>
+</body>
+</html>
