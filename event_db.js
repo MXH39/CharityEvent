@@ -11,6 +11,6 @@ db.connect((err) => {
         console.log("DB connect fail：",err);
         return;
     }
-    console.log("✅ charityevents_db connected");
+    console.log("charityevents_db connected");
 });
 module.exports = db;
