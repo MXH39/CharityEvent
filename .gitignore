@@ -1,1 +1,19 @@
+# Dependencies
 /node_modules
+
+# Environment / secrets - never commit credentials
+.env
+*.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local test artefacts
+/tmp
