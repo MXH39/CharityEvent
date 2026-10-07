@@ -1,17 +1,29 @@
 {
-  "name": "charityevent",
-  "version": "1.0.0",
-  "main": "event_db.js",
+  "name": "charity-event-a3",
+  "version": "3.0.0",
+  "description": "PROG2002 Assessment 3 - Charity Event Management System (AngularJS client-side website, AngularJS admin-side website and Node.js/Express/MySQL RESTful API).",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test:api": "node scripts/api-smoke-test.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "PROG2002",
+    "charity",
+    "express",
+    "mysql",
+    "angularjs",
+    "rest-api"
+  ],
+  "author": "MXH39 & ShygirlJiang",
   "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "mysql2": "^3.24.4"
-  },
-  "description": ""
+  }
 }
