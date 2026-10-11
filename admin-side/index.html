@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Charity Admin Portal | PROG2002 A3</title>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<!--
+    PROG2002 Web Development II - Assessment 3
+    Admin-side website shell (AngularJS single page application).
+
+    Provides the full C.R.U.D. interface over the charity event data:
+    dashboard -> list -> create -> update -> delete (+ category management).
+    The navigation menu below is present on every screen, as required.
+-->
+<body ng-app="adminApp">
+
+    <div class="topbar">
+        <div class="title">
+            <span class="logo">🛠️</span>
+            <span>
+                Charity Admin Portal
+                <small>City Community Charity &middot; PROG2002 A3</small>
+            </span>
+        </div>
+        <div class="right">
+            <span>Node.js / Express / MySQL &middot; REST API</span>
+            <a href="/" target="_blank">View public website &rarr;</a>
+        </div>
+    </div>
+
+    <div class="shell">
+        <!-- Navigation menu (present on all admin pages) -->
+        <nav class="sidebar">
+            <h4>Overview</h4>
+            <a href="#/dashboard"     ng-class="{active: isActive('/dashboard')}">📊 Dashboard</a>
+
+            <h4>Charity events</h4>
+            <a href="#/events"        ng-class="{active: isActive('/events') && !isActive('/events/new')}">📋 All events</a>
+            <a href="#/events/new"    ng-class="{active: isActive('/events/new')}">➕ New event</a>
+            <a href="#/registrations" ng-class="{active: isActive('/registrations')}">🎟️ Registrations</a>
+
+            <h4>Configuration</h4>
+            <a href="#/categories"    ng-class="{active: isActive('/categories')}">🏷️ Event categories</a>
+
+            <h4>External</h4>
+            <a href="/" target="_blank">🌐 Public website</a>
+        </nav>
+
+        <!-- The active route's template is injected here -->
+        <main class="content" ng-view></main>
+    </div>
+
+    <script src="js/lib/angular.min.js"></script>
+    <script src="js/lib/angular-route.min.js"></script>
+
+    <script src="js/app.js"></script>
+    <script src="js/services.js"></script>
+    <script src="js/filters.js"></script>
+    <script src="js/controllers.js"></script>
+</body>
+</html>

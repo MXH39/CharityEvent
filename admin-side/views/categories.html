@@ -1,0 +1,90 @@
+<!--
+    Event category management.
+    Assessment 3 Part 4 requires the admin website to manipulate
+    "charity events AND event category data", so the category resource has its
+    own create / rename / delete screen backed by /api/categories.
+-->
+<div class="page-head">
+    <div>
+        <h2>Event categories</h2>
+        <p>
+            Categories are used by the event forms and by the public search filter.
+            <span class="mono">GET / POST / PUT / DELETE /api/categories</span>
+        </p>
+    </div>
+</div>
+
+<div class="alert alert-success" ng-if="message">{{ message }}</div>
+<div class="alert alert-error" ng-if="error">{{ error }}</div>
+
+<!-- Create -->
+<div class="panel">
+    <h3>Add a new category</h3>
+    <p class="sub">Category names must be unique (case insensitive).</p>
+    <form name="catForm" ng-submit="create(catForm)" novalidate>
+        <div class="form-grid">
+            <div class="field">
+                <label for="c-name">Category name <span class="req">*</span></label>
+                <input type="text" id="c-name" name="category_name" ng-model="newName"
+                       maxlength="50" placeholder="e.g. Trivia Night" required>
+                <span class="field-error" ng-if="catForm.category_name.$touched && catForm.category_name.$error.required">
+                    A category name is required.
+                </span>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-accent">➕ Create category</button>
+        </div>
+    </form>
+</div>
+
+<div ng-if="loading" class="spinner"></div>
+
+<!-- List / rename / delete -->
+<div class="panel flush" ng-if="!loading">
+    <div style="padding:20px 22px 6px">
+        <h3>Existing categories</h3>
+        <p class="sub">{{ categories.length }} category(ies) in use</p>
+    </div>
+    <div class="table-wrap">
+        <table class="data">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Category name</th>
+                    <th class="num">Events using it</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="category in categories track by category.category_id">
+                    <td>{{ category.category_id }}</td>
+                    <td>
+                        <span ng-if="editingId !== category.category_id"><strong>{{ category.category_name }}</strong></span>
+                        <input ng-if="editingId === category.category_id" type="text"
+                               ng-model="editingName" maxlength="50" style="padding:6px 9px;border:1.5px solid #14b1a8;border-radius:7px">
+                    </td>
+                    <td class="num">
+                        <span class="badge badge-cat">{{ category.event_count }}</span>
+                    </td>
+                    <td>
+                        <div class="row-actions">
+                            <button class="btn btn-sm btn-ghost" ng-if="editingId !== category.category_id"
+                                    ng-click="startEdit(category)">✏️ Rename</button>
+                            <button class="btn btn-sm btn-accent" ng-if="editingId === category.category_id"
+                                    ng-click="saveEdit(category)">💾 Save</button>
+                            <button class="btn btn-sm btn-ghost" ng-if="editingId === category.category_id"
+                                    ng-click="cancelEdit()">Cancel</button>
+                            <button class="btn btn-sm btn-danger" ng-click="remove(category)">🗑️ Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<p class="hint" style="margin-top:14px">
+    A category can only be deleted when no event is using it &mdash; the API returns HTTP 409 otherwise,
+    protecting the <span class="mono">FOREIGN KEY</span> relationship between the two tables.
+</p>

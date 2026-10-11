@@ -1,0 +1,124 @@
+<!--
+    NEW feature: create a charity event.
+    The "Save / Submit" button validates the form on the client and then calls
+    POST /api/events, which inserts the row into the charity_events table.
+-->
+<div class="page-head">
+    <div>
+        <h2>Create a new charity event</h2>
+        <p>
+            Submitting this form calls <span class="mono">POST /api/events</span>. The API performs
+            the same validation again on the server before inserting the record.
+        </p>
+    </div>
+    <a class="btn btn-ghost" href="#/events">&larr; Back to list</a>
+</div>
+
+<div class="alert alert-error" ng-if="error">{{ error }}</div>
+<div class="alert alert-error" ng-if="fieldErrors.length">
+    <strong>Server validation:</strong>
+    <ul><li ng-repeat="e in fieldErrors track by $index">{{ e }}</li></ul>
+</div>
+
+<div class="panel">
+    <form name="eventForm" ng-submit="save(eventForm)" novalidate>
+        <div class="form-grid">
+
+            <div class="field">
+                <label for="n-title">Event title <span class="req">*</span></label>
+                <input type="text" id="n-title" name="event_title" ng-model="event.event_title"
+                       placeholder="e.g. Spring Charity Fun Run" maxlength="150" required>
+                <span class="field-error" ng-if="eventForm.event_title.$touched && eventForm.event_title.$error.required">
+                    Event title is required.
+                </span>
+            </div>
+
+            <div class="field">
+                <label for="n-org">Organisation <span class="req">*</span></label>
+                <select id="n-org" name="organisation_id" ng-model="event.organisation_id" required
+                        ng-options="o.organisation_id as o.organisation_name for o in organisations">
+                    <option value="">-- choose an organisation --</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="n-cat">Event category <span class="req">*</span></label>
+                <select id="n-cat" name="category_id" ng-model="event.category_id" required
+                        ng-options="c.category_id as c.category_name for c in categories">
+                    <option value="">-- choose a category --</option>
+                </select>
+                <span class="help"><a href="#/categories">Manage categories</a></span>
+            </div>
+
+            <div class="field">
+                <label for="n-date">Event date &amp; time <span class="req">*</span></label>
+                <input type="datetime-local" id="n-date" name="event_date" ng-model="event.event_date" required>
+                <span class="field-error" ng-if="eventForm.event_date.$touched && eventForm.event_date.$error.required">
+                    Please choose the date and time.
+                </span>
+            </div>
+
+            <div class="field">
+                <label for="n-loc">Location <span class="req">*</span></label>
+                <input type="text" id="n-loc" name="location" ng-model="event.location"
+                       placeholder="e.g. Central Park" maxlength="150" required>
+                <span class="field-error" ng-if="eventForm.location.$touched && eventForm.location.$error.required">
+                    Location is required.
+                </span>
+            </div>
+
+            <div class="field">
+                <label for="n-price">Ticket price (AUD) <span class="req">*</span></label>
+                <input type="number" id="n-price" name="ticket_price" ng-model="event.ticket_price"
+                       min="0" step="0.01" required>
+                <span class="help">Use 0 for a free community event.</span>
+            </div>
+
+            <div class="field">
+                <label for="n-goal">Fundraising goal (AUD) <span class="req">*</span></label>
+                <input type="number" id="n-goal" name="fundraising_goal" ng-model="event.fundraising_goal"
+                       min="0" step="1" required>
+            </div>
+
+            <div class="field">
+                <label for="n-progress">Current progress (AUD)</label>
+                <input type="number" id="n-progress" name="current_progress" ng-model="event.current_progress"
+                       min="0" step="1">
+            </div>
+
+            <div class="field">
+                <label for="n-lat">Latitude</label>
+                <input type="number" id="n-lat" name="latitude" ng-model="event.latitude"
+                       min="-90" max="90" step="0.000001" placeholder="-33.873100">
+                <span class="help">Required for the Open-Meteo weather forecast.</span>
+            </div>
+
+            <div class="field">
+                <label for="n-lng">Longitude</label>
+                <input type="number" id="n-lng" name="longitude" ng-model="event.longitude"
+                       min="-180" max="180" step="0.000001" placeholder="151.206300">
+            </div>
+
+            <div class="field full">
+                <label for="n-desc">Event description</label>
+                <textarea id="n-desc" name="event_description" ng-model="event.event_description" rows="4"
+                          placeholder="Describe the purpose of the event and who it supports."></textarea>
+            </div>
+
+            <div class="field full">
+                <label class="checkbox-row">
+                    <input type="checkbox" ng-model="event.is_suspended" ng-true-value="1" ng-false-value="0">
+                    Create this event as <strong>suspended</strong> (hidden from the public website)
+                </label>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-accent" ng-disabled="saving">
+                {{ saving ? 'Saving…' : '💾 Save / Submit' }}
+            </button>
+            <a class="btn btn-ghost" href="#/events">Cancel</a>
+            <span class="hint">Fields marked <span style="color:#dc2626">*</span> are required.</span>
+        </div>
+    </form>
+</div>

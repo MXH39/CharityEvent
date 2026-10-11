@@ -1,0 +1,106 @@
+<!--
+    Bonus admin screen: every registration record in the database.
+    Demonstrates that the admin API can also read and update the new
+    event_registrations resource.
+-->
+<div class="page-head">
+    <div>
+        <h2>Registration records</h2>
+        <p>
+            All ticket purchases stored in <span class="mono">event_registrations</span>, retrieved with
+            <span class="mono">GET /api/registrations</span> and joined to the event each booking belongs to.
+        </p>
+    </div>
+</div>
+
+<div class="alert alert-success" ng-if="message">{{ message }}</div>
+<div class="alert alert-error" ng-if="error">{{ error }}</div>
+
+<div class="toolbar">
+    <div class="field">
+        <label for="r-event">Event</label>
+        <select id="r-event" ng-model="filters.event_id" ng-change="apply()"
+                ng-options="e.event_id as ('#' + e.event_id + ' ' + e.event_title) for e in events">
+            <option value="">All events</option>
+        </select>
+    </div>
+    <div class="field">
+        <label for="r-status">Registration status</label>
+        <select id="r-status" ng-model="filters.status" ng-change="apply()">
+            <option value="">All statuses</option>
+            <option value="Confirmed">Confirmed</option>
+            <option value="Pending">Pending</option>
+            <option value="Cancelled">Cancelled</option>
+        </select>
+    </div>
+    <button class="btn btn-ghost" ng-click="reset()">Reset</button>
+    <span class="hint" style="margin-left:auto">
+        {{ registrations.length }} record(s) &middot;
+        {{ totalTickets() }} ticket(s) &middot;
+        {{ totalAmount() | currency }} total
+    </span>
+</div>
+
+<div ng-if="loading" class="spinner"></div>
+
+<div class="panel flush" ng-if="!loading">
+    <div class="table-wrap">
+        <table class="data">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Event</th>
+                    <th>Attendee</th>
+                    <th>Contact</th>
+                    <th class="num">Tickets</th>
+                    <th class="num">Amount</th>
+                    <th>Registered at</th>
+                    <th>Status</th>
+                    <th>Change status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="row in registrations track by row.registration_id">
+                    <td>{{ row.registration_id }}</td>
+                    <td>
+                        <strong>{{ row.event_title }}</strong>
+                        <div class="hint">{{ row.event_date | shortDate }}</div>
+                    </td>
+                    <td>{{ row.attendee_name }}</td>
+                    <td>
+                        <div>{{ row.attendee_email }}</div>
+                        <div class="hint">{{ row.contact_phone }}</div>
+                    </td>
+                    <td class="num">{{ row.tickets_purchased }}</td>
+                    <td class="num">{{ row.total_amount | currency }}</td>
+                    <td>{{ row.registration_date | dateTime }}</td>
+                    <td>
+                        <span class="badge"
+                              ng-class="{'badge-active': row.registration_status==='Confirmed',
+                                         'badge-past': row.registration_status==='Pending',
+                                         'badge-suspended': row.registration_status==='Cancelled'}">
+                            {{ row.registration_status }}
+                        </span>
+                    </td>
+                    <td>
+                        <select ng-model="row.registration_status"
+                                ng-change="changeStatus(row, row.registration_status)">
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" ng-click="remove(row)">Delete</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="empty" ng-if="!registrations.length">
+        <span class="big">🎟️</span>
+        No registration records match the selected filters.
+    </div>
+</div>

@@ -1,0 +1,113 @@
+<!--
+    LIST + DELETE feature.
+    Shows every registered charity event regardless of status
+    (Active, Past, Suspended) as required by Assessment 3 Part 4.
+-->
+<div class="page-head">
+    <div>
+        <h2>All charity events</h2>
+        <p>
+            Retrieved from <span class="mono">GET /api/admin/events</span>. The list includes every
+            event regardless of its status, together with how many registrations and tickets each
+            event has received.
+        </p>
+    </div>
+    <a class="btn btn-accent" href="#/events/new">➕ New event</a>
+</div>
+
+<!-- Messages -->
+<div class="alert alert-success" ng-if="message">{{ message }}</div>
+<div class="alert alert-error" ng-if="error">{{ error }}</div>
+<div class="alert alert-info" ng-if="!events.length && !loading">
+    No events have been created yet. Use <strong>New event</strong> to add the first one.
+</div>
+
+<!-- Filters -->
+<div class="toolbar">
+    <div class="field">
+        <label for="a-status">Status</label>
+        <select id="a-status" ng-model="filters.status" ng-change="applyFilters()">
+            <option value="">All statuses ({{ events.length }})</option>
+            <option value="Active">Active ({{ countByStatus('Active') }})</option>
+            <option value="Past">Past ({{ countByStatus('Past') }})</option>
+            <option value="Suspended">Suspended ({{ countByStatus('Suspended') }})</option>
+        </select>
+    </div>
+    <div class="field">
+        <label for="a-keyword">Search</label>
+        <input type="text" id="a-keyword" ng-model="filters.keyword" ng-change="applyFilters()"
+               placeholder="Title, location or category">
+    </div>
+    <button class="btn btn-ghost" ng-click="filters.status=''; filters.keyword=''; applyFilters()">Reset</button>
+    <span class="hint" style="margin-left:auto">{{ filtered.length }} event(s) shown</span>
+</div>
+
+<div ng-if="loading" class="spinner"></div>
+
+<div class="panel flush" ng-if="!loading">
+    <div class="table-wrap">
+        <table class="data">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Event</th>
+                    <th>Category</th>
+                    <th>Date &amp; time</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th class="num">Ticket</th>
+                    <th class="num">Regs / Tickets</th>
+                    <th class="num">Raised</th>
+                    <th>Progress</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="event in filtered track by event.event_id">
+                    <td>{{ event.event_id }}</td>
+                    <td>
+                        <strong>{{ event.event_title }}</strong>
+                        <div class="hint">{{ event.organisation_name }}</div>
+                    </td>
+                    <td><span class="badge badge-cat">{{ event.category_name }}</span></td>
+                    <td>{{ event.event_date | eventDate }}</td>
+                    <td>{{ event.location }}</td>
+                    <td><span ng-class="event.status | statusClass">{{ event.status }}</span></td>
+                    <td class="num">
+                        <span ng-if="event.ticket_price > 0">{{ event.ticket_price | currency }}</span>
+                        <span ng-if="event.ticket_price == 0" class="badge badge-free">Free</span>
+                    </td>
+                    <td class="num">
+                        {{ event.registration_count }} / {{ event.tickets_sold }}
+                    </td>
+                    <td class="num">{{ event.amount_raised | currency }}</td>
+                    <td style="min-width:130px">
+                        <div class="progress">
+                            <span ng-style="{ width: ((event.current_progress / event.fundraising_goal * 100) > 100 ? 100 : (event.current_progress / event.fundraising_goal * 100)) + '%' }"
+                                  ng-if="event.fundraising_goal > 0"></span>
+                        </div>
+                        <div class="progress-text">
+                            {{ event.current_progress | currency }} / {{ event.fundraising_goal | currency }}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="row-actions">
+                            <a class="btn btn-sm btn-ghost" href="#/events/{{ event.event_id }}/edit">✏️ Edit</a>
+                            <button class="btn btn-sm btn-danger" ng-click="remove(event)">🗑️ Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="empty" ng-if="!filtered.length && events.length">
+        <span class="big">🔍</span>
+        No events match the current filter.
+    </div>
+</div>
+
+<p class="hint" style="margin-top:14px">
+    <strong>Data integrity rule:</strong> an event can only be deleted when it has no registrations.
+    The API replies with HTTP 409 and the reason is displayed above when a deletion is blocked.
+</p>

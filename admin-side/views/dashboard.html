@@ -1,0 +1,96 @@
+<!-- Admin dashboard: aggregated statistics from GET /api/admin/stats -->
+<div class="page-head">
+    <div>
+        <h2>Dashboard</h2>
+        <p>
+            A summary of everything stored in the <span class="mono">charityevents_db</span> database.
+            All numbers are calculated by SQL aggregate queries on the server and returned by
+            <span class="mono">GET /api/admin/stats</span>.
+        </p>
+    </div>
+    <a class="btn btn-accent" href="#/events/new">➕ Create a new event</a>
+</div>
+
+<div ng-if="loading" class="spinner"></div>
+<div class="alert alert-error" ng-if="error">{{ error }}</div>
+
+<div ng-if="stats">
+    <div class="stat-grid">
+        <div class="stat-card brand">
+            <div class="label">Total events</div>
+            <div class="value">{{ stats.events.total }}</div>
+            <div class="foot">All statuses combined</div>
+        </div>
+        <div class="stat-card success">
+            <div class="label">Active events</div>
+            <div class="value">{{ stats.events.active }}</div>
+            <div class="foot">Not suspended and still upcoming</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Past events</div>
+            <div class="value">{{ stats.events.past }}</div>
+            <div class="foot">Already finished</div>
+        </div>
+        <div class="stat-card danger">
+            <div class="label">Suspended</div>
+            <div class="value">{{ stats.events.suspended }}</div>
+            <div class="foot">Closed to new registrations</div>
+        </div>
+    </div>
+
+    <div class="stat-grid">
+        <div class="stat-card accent">
+            <div class="label">Registration records</div>
+            <div class="value">{{ stats.registrations.total }}</div>
+            <div class="foot">Excludes cancelled bookings</div>
+        </div>
+        <div class="stat-card accent">
+            <div class="label">Tickets purchased</div>
+            <div class="value">{{ stats.registrations.tickets }}</div>
+            <div class="foot">Sum of tickets_purchased</div>
+        </div>
+        <div class="stat-card accent">
+            <div class="label">Ticket revenue</div>
+            <div class="value">{{ stats.registrations.revenue | currency }}</div>
+            <div class="foot">Sum of total_amount</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Event categories</div>
+            <div class="value">{{ stats.categories }}</div>
+            <div class="foot"><a href="#/categories">Manage categories</a></div>
+        </div>
+    </div>
+
+    <div class="panel flush">
+        <div style="padding:20px 22px 6px">
+            <h3>Top 5 events by tickets sold</h3>
+            <p class="sub">Calculated with a GROUP BY / SUM query over the registrations table.</p>
+        </div>
+        <div class="table-wrap">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Category</th>
+                        <th>Date</th>
+                        <th class="num">Registrations</th>
+                        <th class="num">Tickets sold</th>
+                        <th class="num">Revenue</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="row in stats.top_events track by row.event_id">
+                        <td><strong>{{ row.event_title }}</strong></td>
+                        <td><span class="badge badge-cat">{{ row.category_name }}</span></td>
+                        <td>{{ row.event_date | shortDate }}</td>
+                        <td class="num">{{ row.registration_count }}</td>
+                        <td class="num">{{ row.tickets_sold }}</td>
+                        <td class="num">{{ row.revenue | currency }}</td>
+                        <td><a class="btn btn-sm btn-ghost" href="#/events/{{ row.event_id }}/edit">Edit</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,215 @@
+<!--
+    UPDATE feature: edit an existing charity event.
+    The same screen also displays the registrations already received for that
+    event, which is a specific requirement of Assessment 3 Part 4.
+-->
+<div class="page-head">
+    <div>
+        <h2>Edit charity event</h2>
+        <p>
+            Loaded with <span class="mono">GET /api/events/{{ event ? event.event_id : '' }}</span> and saved with
+            <span class="mono">PUT /api/events/{{ event ? event.event_id : '' }}</span>.
+        </p>
+    </div>
+    <a class="btn btn-ghost" href="#/events">&larr; Back to list</a>
+</div>
+
+<div ng-if="loading" class="spinner"></div>
+<div class="alert alert-error" ng-if="error">{{ error }}</div>
+<div class="alert alert-success" ng-if="message">{{ message }}</div>
+<div class="alert alert-error" ng-if="fieldErrors.length">
+    <strong>Server validation:</strong>
+    <ul><li ng-repeat="e in fieldErrors track by $index">{{ e }}</li></ul>
+</div>
+
+<div ng-if="event">
+
+    <!-- Event summary strip -->
+    <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
+        <div>
+            <h3>Event #{{ event.event_id }} &mdash; {{ event.event_title }}</h3>
+            <p class="sub" style="margin-bottom:0">
+                {{ event.event_date | eventDate }} &middot; {{ event.location }} &middot; {{ event.category_name }}
+            </p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <span ng-class="event.status | statusClass">{{ event.status }}</span>
+            <button class="btn btn-sm" ng-click="toggleSuspension()">
+                {{ event.is_suspended == 1 ? '▶️ Re-activate event' : '⏸️ Suspend event' }}
+            </button>
+        </div>
+    </div>
+
+    <!-- Weather forecast for this event (external API) -->
+    <div class="panel" ng-if="weather">
+        <h3>Weather forecast on the event day</h3>
+        <p class="sub">Open-Meteo &mdash; helps staff prepare for weather sensitive events such as fun runs.</p>
+        <div ng-if="weather.available">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+                <span style="font-size:40px">{{ weather.forecast.icon }}</span>
+                <div>
+                    <div style="font-size:17px;font-weight:600">{{ weather.forecast.description }}</div>
+                    <div style="font-size:22px;font-weight:700;color:#0d7377">
+                        {{ weather.forecast.temperature_max }}&deg;C
+                        <span class="hint">/ min {{ weather.forecast.temperature_min }}&deg;C</span>
+                    </div>
+                    <div class="hint">
+                        {{ weather.forecast.date }} &middot; rain chance {{ weather.forecast.precipitation_probability }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="alert alert-warning" ng-if="!weather.available" style="margin-bottom:0">
+            {{ weather.reason }}
+        </div>
+    </div>
+
+    <!-- The update form -->
+    <div class="panel">
+        <h3>Event details</h3>
+        <p class="sub">Change any field and press Save. Required fields are marked with <span style="color:#dc2626">*</span>.</p>
+
+        <form name="editForm" ng-submit="save(editForm)" novalidate>
+            <div class="form-grid">
+
+                <div class="field">
+                    <label for="e-title">Event title <span class="req">*</span></label>
+                    <input type="text" id="e-title" name="event_title" ng-model="event.event_title" maxlength="150" required>
+                    <span class="field-error" ng-if="editForm.event_title.$touched && editForm.event_title.$error.required">
+                        Event title is required.
+                    </span>
+                </div>
+
+                <div class="field">
+                    <label for="e-org">Organisation <span class="req">*</span></label>
+                    <select id="e-org" name="organisation_id" ng-model="event.organisation_id" required
+                            ng-options="o.organisation_id as o.organisation_name for o in organisations"></select>
+                </div>
+
+                <div class="field">
+                    <label for="e-cat">Event category <span class="req">*</span></label>
+                    <select id="e-cat" name="category_id" ng-model="event.category_id" required
+                            ng-options="c.category_id as c.category_name for c in categories"></select>
+                </div>
+
+                <div class="field">
+                    <label for="e-date">Event date &amp; time <span class="req">*</span></label>
+                    <input type="datetime-local" id="e-date" name="event_date" ng-model="event.event_date" required>
+                    <span class="field-error" ng-if="editForm.event_date.$touched && editForm.event_date.$error.required">
+                        Please choose the date and time.
+                    </span>
+                </div>
+
+                <div class="field">
+                    <label for="e-loc">Location <span class="req">*</span></label>
+                    <input type="text" id="e-loc" name="location" ng-model="event.location" maxlength="150" required>
+                </div>
+
+                <div class="field">
+                    <label for="e-price">Ticket price (AUD)</label>
+                    <input type="number" id="e-price" name="ticket_price" ng-model="event.ticket_price" min="0" step="0.01">
+                </div>
+
+                <div class="field">
+                    <label for="e-goal">Fundraising goal (AUD)</label>
+                    <input type="number" id="e-goal" name="fundraising_goal" ng-model="event.fundraising_goal" min="0" step="1">
+                </div>
+
+                <div class="field">
+                    <label for="e-progress">Current progress (AUD)</label>
+                    <input type="number" id="e-progress" name="current_progress" ng-model="event.current_progress" min="0" step="1">
+                </div>
+
+                <div class="field">
+                    <label for="e-lat">Latitude</label>
+                    <input type="number" id="e-lat" name="latitude" ng-model="event.latitude" min="-90" max="90" step="0.000001">
+                </div>
+
+                <div class="field">
+                    <label for="e-lng">Longitude</label>
+                    <input type="number" id="e-lng" name="longitude" ng-model="event.longitude" min="-180" max="180" step="0.000001">
+                </div>
+
+                <div class="field full">
+                    <label for="e-desc">Event description</label>
+                    <textarea id="e-desc" name="event_description" ng-model="event.event_description" rows="4"></textarea>
+                </div>
+
+                <div class="field full">
+                    <label class="checkbox-row">
+                        <input type="checkbox" ng-model="event.is_suspended" ng-true-value="1" ng-false-value="0">
+                        Event is suspended (hidden from the public website and closed to registrations)
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-accent" ng-disabled="saving">
+                    {{ saving ? 'Saving…' : '💾 Save changes' }}
+                </button>
+                <button type="button" class="btn btn-ghost" ng-click="cancel()">Cancel</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Associated registrations (requirement: the update screen must show them) -->
+    <div class="section-title">
+        <h3>Registrations for this event</h3>
+        <span class="hint">
+            {{ registrations.length }} record(s) &middot;
+            {{ registrations[0] ? 'most recent' : 'no' }} purchase
+            {{ registrations.length ? 'first shown' : '' }}
+        </span>
+    </div>
+
+    <div class="alert alert-warning" ng-if="registrations.length">
+        This event has registrations, so the API will <strong>block</strong> any attempt to delete it.
+        Remove the registrations below first if the event really must be deleted.
+    </div>
+
+    <div class="panel flush">
+        <div class="table-wrap">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Attendee</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th class="num">Tickets</th>
+                        <th class="num">Amount</th>
+                        <th>Registered at</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="row in registrations track by row.registration_id">
+                        <td>{{ row.registration_id }}</td>
+                        <td><strong>{{ row.attendee_name }}</strong></td>
+                        <td>{{ row.attendee_email }}</td>
+                        <td>{{ row.contact_phone }}</td>
+                        <td class="num">{{ row.tickets_purchased }}</td>
+                        <td class="num">{{ row.total_amount | currency }}</td>
+                        <td>{{ row.registration_date | dateTime }}</td>
+                        <td>
+                            <span class="badge"
+                                  ng-class="{'badge-active': row.registration_status==='Confirmed',
+                                             'badge-past': row.registration_status==='Pending',
+                                             'badge-suspended': row.registration_status==='Cancelled'}">
+                                {{ row.registration_status }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" ng-click="removeRegistration(row)">Remove</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="empty" ng-if="!registrations.length">
+            <span class="big">🎟️</span>
+            No registrations have been received for this event yet.
+        </div>
+    </div>
+</div>
