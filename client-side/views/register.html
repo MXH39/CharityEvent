@@ -1,0 +1,186 @@
+<!--
+    NEW PAGE (Assessment 3) - Event registration.
+
+    The event id is taken from the route (/register/:id), the details of that
+    event are loaded through GET /api/events/:id so the user can see exactly what
+    they are registering for, and the form posts to POST /api/registrations.
+-->
+<div class="page-head">
+    <h2>Register for a charity event</h2>
+    <p>
+        Complete the form below to reserve your tickets. Your registration is stored in the
+        <code>event_registrations</code> table through the REST API, and each email address may
+        only register once per event.
+    </p>
+</div>
+
+<div ng-if="loading" class="spinner"></div>
+<div class="alert alert-error" ng-if="error">{{ error }}</div>
+
+<!-- ------------------------------------------------ already registered -->
+<div ng-if="submitted" class="panel" style="text-align:center">
+    <div style="font-size:52px">🎉</div>
+    <h3 style="font-size:22px">Registration confirmed</h3>
+    <p class="sub" style="font-size:15px">{{ resultMessage }}</p>
+
+    <div class="detail-grid" style="margin:20px 0;text-align:left">
+        <div class="stat">
+            <div class="label">Attendee</div>
+            <div class="value" style="font-size:16px">{{ confirmation.registration.attendee_name }}</div>
+        </div>
+        <div class="stat">
+            <div class="label">Event</div>
+            <div class="value" style="font-size:16px">{{ confirmation.registration.event_title }}</div>
+        </div>
+        <div class="stat">
+            <div class="label">Tickets</div>
+            <div class="value">{{ confirmation.registration.tickets_purchased }}</div>
+        </div>
+        <div class="stat">
+            <div class="label">Total paid</div>
+            <div class="value">{{ confirmation.registration.total_amount | currency }}</div>
+        </div>
+        <div class="stat">
+            <div class="label">Registration #</div>
+            <div class="value">{{ confirmation.registration.registration_id }}</div>
+        </div>
+        <div class="stat">
+            <div class="label">Registered at</div>
+            <div class="value" style="font-size:15px">{{ confirmation.registration.registration_date | dateTime }}</div>
+        </div>
+    </div>
+
+    <div class="form-actions" style="justify-content:center">
+        <a class="btn" ng-href="#/events/{{ registration.event_id }}">View the event page</a>
+        <button class="btn btn-accent" ng-click="registerAnother()">Register another attendee</button>
+        <a class="btn btn-ghost" href="#/home">Back to home</a>
+    </div>
+</div>
+
+<!-- ------------------------------------------------------- the event info -->
+<div ng-if="!submitted && event">
+
+    <div class="detail-hero" style="margin-bottom:18px">
+        <h2>You are registering for: {{ event.event_title }}</h2>
+        <div class="sub">
+            <span>📅 {{ event.event_date | eventDate }}</span>
+            <span>📍 {{ event.location }}</span>
+            <span>🏷️ {{ event.category_name }}</span>
+            <span>🎫 {{ event.ticket_price | money }} per ticket</span>
+        </div>
+    </div>
+
+    <div ng-if="previousRegistration" class="recap">
+        We remembered your details from your last registration
+        (<b>{{ previousRegistration.attendee_name }}</b>) and pre-filled the form for you.
+        They are stored in your browser's local storage only &mdash; nothing is shared.
+    </div>
+
+    <!-- ------------------------------------------------ registration form -->
+    <div class="panel">
+        <h3>Registration details</h3>
+        <p class="sub">Fields marked with <span style="color:#dc2626">*</span> are required.</p>
+
+        <form name="registerForm" ng-submit="submit(registerForm)" novalidate>
+            <div class="form-grid">
+
+                <div class="field">
+                    <label for="r-name">Full name <span class="req">*</span></label>
+                    <input type="text" id="r-name" name="attendee_name"
+                           ng-model="registration.attendee_name"
+                           ng-change="validate(registerForm)"
+                           placeholder="e.g. Tianyu Xue" maxlength="100" required>
+                    <span class="field-error" ng-if="registerForm.attendee_name.$touched && registerForm.attendee_name.$error.required">
+                        Full name is required.
+                    </span>
+                </div>
+
+                <div class="field">
+                    <label for="r-email">Email address <span class="req">*</span></label>
+                    <input type="email" id="r-email" name="attendee_email"
+                           ng-model="registration.attendee_email"
+                           ng-change="validate(registerForm)"
+                           placeholder="name@example.com" maxlength="150" required>
+                    <span class="help">Only one registration per email address per event.</span>
+                    <span class="field-error" ng-if="registerForm.attendee_email.$touched && registerForm.attendee_email.$invalid">
+                        Please enter a valid email address.
+                    </span>
+                </div>
+
+                <div class="field">
+                    <label for="r-phone">Contact phone <span class="req">*</span></label>
+                    <input type="text" id="r-phone" name="contact_phone"
+                           ng-model="registration.contact_phone"
+                           ng-change="validate(registerForm)"
+                           ng-pattern="/^[0-9+\-\s()]{6,30}$/"
+                           placeholder="e.g. 0412 345 678" required>
+                    <span class="field-error" ng-if="registerForm.contact_phone.$touched && registerForm.contact_phone.$invalid">
+                        Enter 6-30 digits (spaces, +, - and brackets are allowed).
+                    </span>
+                </div>
+
+                <div class="field">
+                    <label for="r-tickets">Number of tickets <span class="req">*</span></label>
+                    <input type="number" id="r-tickets" name="tickets_purchased"
+                           ng-model="registration.tickets_purchased"
+                           min="1" max="10" step="1" required>
+                    <span class="help">You may buy between 1 and 10 tickets.</span>
+                    <span class="field-error" ng-if="registerForm.tickets_purchased.$touched && registerForm.tickets_purchased.$invalid">
+                        Tickets must be a whole number between 1 and 10.
+                    </span>
+                </div>
+
+                <div class="field full">
+                    <label>Registration date</label>
+                    <input type="text" value="{{ today | date:'dd MMMM yyyy, HH:mm' }}" disabled
+                           style="background:#f3f6f7;color:#6b7280">
+                    <span class="help">
+                        The API records the exact date and time the registration is saved
+                        (<code>registration_date</code> is a <code>DATETIME</code> column).
+                    </span>
+                </div>
+            </div>
+
+            <!-- live total -->
+            <div class="panel" style="margin:18px 0 0;background:#f8fbfb;box-shadow:none">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+                    <div>
+                        <div class="hint">Ticket price &times; quantity</div>
+                        <div style="font-size:15px">
+                            {{ event.ticket_price | money }} &times; {{ registration.tickets_purchased || 0 }} ticket(s)
+                        </div>
+                    </div>
+                    <div style="text-align:right">
+                        <div class="hint">Total amount</div>
+                        <div style="font-size:26px;font-weight:700;color:#0d7377">{{ (total || 0) | currency }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- inline validation summary -->
+            <div class="alert alert-error" ng-if="fieldErrors.length" style="margin-top:16px">
+                <strong>Please fix the following before submitting:</strong>
+                <ul>
+                    <li ng-repeat="message in fieldErrors track by $index">{{ message }}</li>
+                </ul>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-accent" ng-disabled="submitting">
+                    {{ submitting ? 'Submitting…' : '✅ Finalise registration' }}
+                </button>
+                <a class="btn btn-ghost" ng-href="#/events/{{ registration.event_id }}">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- ------------------------------------------- weather for the event -->
+    <div class="section-title">
+        <h3>Weather on the day</h3>
+        <span class="hint">External API: Open-Meteo</span>
+    </div>
+    <weather-badge data="weather" ng-if="weather"></weather-badge>
+    <div ng-if="!weather" class="skeleton-note">
+        Loading the weather forecast for {{ event.location }}…
+    </div>
+</div>

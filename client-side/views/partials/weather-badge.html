@@ -1,0 +1,46 @@
+<!-- External API widget: Open-Meteo forecast for a charity event -->
+<div class="weather-box" ng-class="{ 'severity-warning': data.forecast && data.forecast.severity === 'warning' }">
+
+    <!-- Case 1: a forecast for the event day is available -->
+    <div ng-if="data.available" style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+        <span class="icon">{{ data.forecast.icon }}</span>
+        <div>
+            <div class="desc">{{ data.forecast.description }}</div>
+            <div class="temp">
+                {{ data.forecast.temperature_max }}&deg;C
+                <span style="font-size:14px;color:#6b7280;font-weight:400">
+                    / min {{ data.forecast.temperature_min }}&deg;C
+                </span>
+            </div>
+            <div class="detail">
+                Expected on {{ data.forecast.date }} &middot;
+                chance of rain {{ data.forecast.precipitation_probability }}% &middot;
+                WMO code {{ data.forecast.weather_code }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Case 2: no forecast (past event, too far ahead, or missing coordinates) -->
+    <div ng-if="!data.available" style="display:flex;align-items:center;gap:14px">
+        <span class="icon">🌐</span>
+        <div>
+            <div class="desc">Weather forecast unavailable</div>
+            <div class="detail">{{ data.reason }}</div>
+        </div>
+    </div>
+
+    <div class="detail" style="margin-left:auto;text-align:right">
+        <div>{{ data.provider }}</div>
+        <div ng-if="data.latitude">lat {{ data.latitude }}, lng {{ data.longitude }}</div>
+        <div ng-if="data.location">{{ data.location }}</div>
+    </div>
+</div>
+
+<!-- 3-day outlook is returned when the event is outside the forecast window -->
+<div ng-if="data.days && data.days.length && !data.available" class="grid" style="margin-top:14px">
+    <div class="card" ng-repeat="day in data.days track by day.date" style="padding:14px">
+        <h4 style="font-size:15px">{{ day.icon }} {{ day.date }}</h4>
+        <p class="desc" style="min-height:0">{{ day.description }}</p>
+        <p style="font-size:13.5px">{{ day.temperature_max }}&deg;C / {{ day.temperature_min }}&deg;C</p>
+    </div>
+</div>

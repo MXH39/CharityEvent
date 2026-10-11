@@ -1,0 +1,12 @@
+<!-- Fundraising thermometer: {{ value }} raised out of the {{ max }} goal -->
+<div>
+    <div class="progress" ng-if="max > 0" title="{{ value | currency }} raised of the {{ max | currency }} goal">
+        <span ng-style="{ width: ((value / max * 100) > 100 ? 100 : (value / max * 100)) + '%' }"></span>
+    </div>
+    <div class="progress-text" ng-if="max > 0">
+        <strong>{{ value | currency }}</strong> raised of the <strong>{{ max | currency }}</strong> goal
+    </div>
+    <div class="progress-text" ng-if="!(max > 0)">
+        <strong>{{ value | currency }}</strong> raised so far
+    </div>
+</div>

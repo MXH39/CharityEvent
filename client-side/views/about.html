@@ -1,0 +1,45 @@
+<!-- About view: organisation information served by GET /api/organisations -->
+<div class="page-head">
+    <h2>About our charity</h2>
+    <p>
+        The details below are no longer hard-coded in the HTML (as they were in Assessment 2) &mdash;
+        they are retrieved from the <code>charity_organisations</code> table through the REST API.
+    </p>
+</div>
+
+<div class="panel" ng-if="organisation">
+    <h3>{{ organisation.organisation_name }}</h3>
+    <p class="sub">{{ organisation.mission }}</p>
+
+    <dl class="info-list">
+        <dt>Organisation ID</dt><dd>#{{ organisation.organisation_id }}</dd>
+        <dt>Email</dt><dd>{{ organisation.contact_email }}</dd>
+        <dt>Phone</dt><dd>{{ organisation.contact_phone }}</dd>
+    </dl>
+</div>
+
+<div class="grid">
+    <div class="card">
+        <h4>💰 What we do</h4>
+        <p class="desc">
+            We plan and run charity events &mdash; fun runs, gala dinners, silent auctions and
+            concerts &mdash; and direct every dollar raised to education, elderly care, animal
+            protection and disaster relief programs.
+        </p>
+    </div>
+    <div class="card">
+        <h4>💻 How this website works</h4>
+        <p class="desc">
+            A Node.js / Express REST API retrieves and manipulates the charity events stored in
+            MySQL. The client website and the staff admin portal are both AngularJS single page
+            applications that consume that API.
+        </p>
+    </div>
+    <div class="card">
+        <h4>🌤️ Live weather</h4>
+        <p class="desc">
+            Every event stores its latitude and longitude, which lets us request a real weather
+            forecast for the day of the event from the external Open-Meteo API.
+        </p>
+    </div>
+</div>

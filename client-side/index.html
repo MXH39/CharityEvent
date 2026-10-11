@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>City Community Charity | PROG2002 A3</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<!--
+    PROG2002 Web Development II - Assessment 3
+    Client-side website shell.
+
+    This single HTML file hosts the whole AngularJS single page application:
+    the navigation bar is static, and the <div ng-view> container is replaced by
+    the template of whichever route is currently active (see js/app.js).
+-->
+<body ng-app="charityApp">
+
+    <header class="site-header">
+        <div class="inner">
+            <a class="brand" href="#/home">
+                <span class="logo">💚</span>
+                <span>
+                    <h1>City Community Charity</h1>
+                    <small>Charity Event Management</small>
+                </span>
+            </a>
+            <nav class="main-nav">
+                <a href="#/home"    ng-class="{active: isActive('/home')}">Home</a>
+                <a href="#/search"  ng-class="{active: isActive('/search')}">Search Events</a>
+                <a href="#/about"   ng-class="{active: isActive('/about')}">About Us</a>
+                <a href="/admin/" title="Staff only">Admin Portal &rarr;</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- The active route's template is injected here by ngRoute -->
+    <main class="page" ng-view></main>
+
+    <footer class="site-footer">
+        <p><strong>City Community Charity</strong> &middot; PROG2002 Web Development II &middot; Assessment 3</p>
+        <p>AngularJS client-side website &middot; Node.js / Express / MySQL RESTful API &middot; Weather data by Open-Meteo</p>
+    </footer>
+
+    <!-- AngularJS framework + router (bundled locally so the site works offline / on cPanel) -->
+    <script src="js/lib/angular.min.js"></script>
+    <script src="js/lib/angular-route.min.js"></script>
+
+    <!-- Application code -->
+    <script src="js/app.js"></script>
+    <script src="js/services.js"></script>
+    <script src="js/filters.js"></script>
+    <script src="js/directives.js"></script>
+    <script src="js/controllers.js"></script>
+</body>
+</html>

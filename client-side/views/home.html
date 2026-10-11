@@ -1,0 +1,45 @@
+<!-- Home view: organisation mission + the upcoming active charity events -->
+<div class="hero">
+    <h2>Welcome to {{ organisation ? organisation.organisation_name : 'City Community Charity' }}</h2>
+    <p>
+        <strong>Our mission:</strong>
+        {{ organisation ? organisation.mission : 'We organise charity events to raise funds for vulnerable groups in our community.' }}
+    </p>
+    <p>
+        <strong>Contact us:</strong>
+        {{ organisation ? organisation.contact_email : 'info@citycharity.org' }} |
+        {{ organisation ? organisation.contact_phone : '0412345678' }}
+    </p>
+    <div class="meta">
+        <span><b>{{ events.length }}</b> upcoming event(s)</span>
+        <span>Dynamic data served by our own REST API</span>
+        <span>Weather powered by the external Open-Meteo API</span>
+    </div>
+</div>
+
+<!-- Bonus: weather forecast for the next event, fetched from the external API -->
+<div ng-if="nextEventWeather" style="margin-bottom:22px">
+    <div class="section-title" style="margin-top:0">
+        <h3>☀️ Weather outlook for our next event: {{ nextEventWeather.event_title }}</h3>
+        <span class="hint">Source: {{ nextEventWeather.provider }}</span>
+    </div>
+    <weather-badge data="nextEventWeather"></weather-badge>
+</div>
+
+<div class="section-title">
+    <h3>Upcoming &amp; active charity events</h3>
+    <span class="hint">Sorted by event date (soonest first)</span>
+</div>
+
+<div ng-if="loading" class="spinner"></div>
+
+<div ng-if="error" class="alert alert-error">{{ error }}</div>
+
+<div ng-if="!loading && !error && events.length === 0" class="empty">
+    <span class="big">📭</span>
+    There are no upcoming charity events at the moment. Please check back soon.
+</div>
+
+<div class="grid">
+    <event-card ng-repeat="event in events track by event.event_id" event="event"></event-card>
+</div>

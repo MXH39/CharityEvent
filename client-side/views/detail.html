@@ -1,0 +1,150 @@
+<!--
+    Event detail view.
+    NEW in Assessment 3:
+      * the complete list of tickets purchased for this event, newest purchase first
+      * the "Register now" button links to the new registration page
+      * the external Open-Meteo weather forecast for the event day
+-->
+<div ng-if="loading" class="spinner"></div>
+<div class="alert alert-error" ng-if="error">{{ error }}</div>
+
+<div ng-if="event">
+
+    <div class="detail-hero">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
+            <div>
+                <h2>{{ event.event_title }}</h2>
+                <div class="sub">
+                    <span>📅 {{ event.event_date | eventDate }}</span>
+                    <span>📍 {{ event.location }}</span>
+                    <span>🏷️ {{ event.category_name }}</span>
+                    <span>🏢 {{ event.organisation_name }}</span>
+                </div>
+            </div>
+            <status-badge status="event.status"></status-badge>
+        </div>
+    </div>
+
+    <div class="detail-grid">
+        <div class="stat">
+            <div class="label">Ticket price</div>
+            <div class="value">
+                <span ng-if="event.ticket_price > 0">{{ event.ticket_price | money }}</span>
+                <span ng-if="event.ticket_price == 0" style="font-size:15px">Free entry</span>
+            </div>
+        </div>
+        <div class="stat">
+            <div class="label">Registration records</div>
+            <div class="value">{{ registrations.length }}</div>
+        </div>
+        <div class="stat">
+            <div class="label">Tickets purchased</div>
+            <div class="value">{{ totalTickets() }}</div>
+        </div>
+        <div class="stat">
+            <div class="label">Amount raised</div>
+            <div class="value">{{ totalAmount() | currency }}</div>
+        </div>
+    </div>
+
+    <!-- ------------------------------------------------ progress + weather -->
+    <div class="panel">
+        <h3>Fundraising progress</h3>
+        <p class="sub">
+            Goal: {{ event.fundraising_goal | currency }} &middot;
+            Recorded progress: {{ event.current_progress | currency }} &middot;
+            Website tickets: {{ totalAmount() | currency }}
+        </p>
+        <progress-bar value="event.current_progress" max="event.fundraising_goal"></progress-bar>
+    </div>
+
+    <div class="section-title">
+        <h3>Weather on the day</h3>
+        <span class="hint">External API: Open-Meteo (api.open-meteo.com)</span>
+    </div>
+    <weather-badge data="weather" ng-if="weather"></weather-badge>
+    <div ng-if="!weather" class="skeleton-note">Loading the weather forecast…</div>
+
+    <!-- ------------------------------------------------------- description -->
+    <div class="panel" style="margin-top:22px">
+        <h3>About this event</h3>
+        <p style="color:#374151">{{ event.event_description || 'No description has been provided for this event.' }}</p>
+
+        <dl class="info-list" style="margin-top:18px">
+            <dt>Event ID</dt><dd>#{{ event.event_id }}</dd>
+            <dt>Organisation</dt><dd>{{ event.organisation_name }}</dd>
+            <dt>Category</dt><dd>{{ event.category_name }}</dd>
+            <dt>Date &amp; time</dt><dd>{{ event.event_date | eventDate }}</dd>
+            <dt>Location</dt><dd>{{ event.location }}</dd>
+            <dt ng-if="event.latitude">Coordinates</dt>
+            <dd ng-if="event.latitude">{{ event.latitude }}, {{ event.longitude }} <span class="hint">(used for the weather forecast)</span></dd>
+            <dt>Status</dt><dd><status-badge status="event.status"></status-badge></dd>
+        </dl>
+    </div>
+
+    <!-- ----------------------------------------- NEW: registration records -->
+    <div class="section-title">
+        <h3>Tickets purchased for this event</h3>
+        <span class="hint">
+            Newest purchase first (the required default order)
+        </span>
+    </div>
+
+    <div class="alert alert-info" ng-if="event.status !== 'Active'">
+        This event is <strong>{{ event.status }}</strong>, so new registrations are not accepted.
+    </div>
+
+    <div class="panel" style="padding:0;overflow:hidden">
+        <div class="table-wrap" style="border:none">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th ng-click="setSort('attendee_name')" style="cursor:pointer">Attendee ⇅</th>
+                        <th>Contact details</th>
+                        <th ng-click="setSort('tickets_purchased')" style="cursor:pointer">Tickets ⇅</th>
+                        <th ng-click="setSort('total_amount')" style="cursor:pointer">Amount ⇅</th>
+                        <th ng-click="setSort('registration_date')" style="cursor:pointer">
+                            Registered ⇅ <span class="hint" ng-if="sort.field==='registration_date'">{{ sort.reverse ? '(newest first)' : '(oldest first)' }}</span>
+                        </th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="row in registrations | orderBy:sort.field:sort.reverse track by row.registration_id">
+                        <td>{{ $index + 1 }}</td>
+                        <td><strong>{{ row.attendee_name }}</strong></td>
+                        <td>
+                            <div>{{ row.attendee_email }}</div>
+                            <div class="hint">{{ row.contact_phone }}</div>
+                        </td>
+                        <td class="num">{{ row.tickets_purchased }}</td>
+                        <td class="num">{{ row.total_amount | currency }}</td>
+                        <td>{{ row.registration_date | dateTime }}</td>
+                        <td>
+                            <span class="badge"
+                                  ng-class="{'badge-active': row.registration_status==='Confirmed',
+                                             'badge-past': row.registration_status==='Pending',
+                                             'badge-suspended': row.registration_status==='Cancelled'}">
+                                {{ row.registration_status }}
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="empty" ng-if="!registrations.length" style="border:none;border-radius:0">
+            <span class="big">🎟️</span>
+            No tickets have been purchased for this event yet. Be the first to register!
+        </div>
+    </div>
+
+    <!-- ------------------------------------- UPDATED "Register now" button -->
+    <div class="form-actions" style="margin-top:24px">
+        <a class="btn btn-accent" ng-if="event.status === 'Active'" ng-href="#/register/{{ event.event_id }}">
+            🎟️ Register for this event
+        </a>
+        <a class="btn btn-ghost" href="#/search">Back to search</a>
+        <a class="btn btn-ghost" href="#/home">Back to home</a>
+    </div>
+</div>

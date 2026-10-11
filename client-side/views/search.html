@@ -1,0 +1,78 @@
+<!-- Search view: server-side filtering through GET /api/events -->
+<div class="page-head">
+    <h2>Search charity events</h2>
+    <p>
+        Filter the charity events stored in the MySQL database. Every field is sent to the
+        REST API (<code>GET /api/events</code>) which builds a parameterised SQL query, so the
+        filtering happens on the server rather than in the browser.
+    </p>
+</div>
+
+<div class="panel">
+    <h3>Search filters</h3>
+    <p class="sub">All filters are optional &mdash; leave them blank to list every event.</p>
+
+    <form name="searchForm" ng-submit="search(searchForm)" novalidate>
+        <div class="filter-bar">
+            <div class="field">
+                <label for="f-date">Event date</label>
+                <input type="date" id="f-date" name="date" ng-model="filters.date">
+                <span class="help">Matches the exact calendar date</span>
+            </div>
+
+            <div class="field">
+                <label for="f-location">Location</label>
+                <input type="text" id="f-location" name="location" ng-model="filters.location"
+                       placeholder="e.g. City Hotel" maxlength="150" ng-trim="true">
+                <span class="help">Partial match, case insensitive</span>
+            </div>
+
+            <div class="field">
+                <label for="f-category">Event category</label>
+                <select id="f-category" name="category_id" ng-model="filters.category_id"
+                        ng-options="c.category_id as c.category_name for c in categories">
+                    <option value="">All categories</option>
+                </select>
+                <span class="help">{{ categories.length }} categories available</span>
+            </div>
+
+            <div class="field">
+                <label for="f-keyword">Keyword</label>
+                <input type="text" id="f-keyword" name="keyword" ng-model="filters.keyword"
+                       placeholder="e.g. concert, auction" maxlength="60" ng-trim="true">
+                <span class="help">Searches the title and description</span>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn" ng-disabled="loading">
+                {{ loading ? 'Searching…' : '🔍 Search' }}
+            </button>
+            <button type="button" class="btn btn-ghost" ng-click="clear(searchForm)">Clear filters</button>
+            <span class="hint" ng-if="searched && results">
+                {{ results.length }} event(s) found
+            </span>
+        </div>
+    </form>
+</div>
+
+<!-- Client-side validation / server error messages -->
+<div class="alert alert-error" ng-if="error">{{ error }}</div>
+
+<div ng-if="loading" class="spinner"></div>
+
+<!-- Initial state: the user has not searched yet -->
+<div class="empty" ng-if="!searched && !loading">
+    <span class="big">🔎</span>
+    Choose one or more filters above and press <strong>Search</strong> to query the API.
+</div>
+
+<!-- Results -->
+<div class="grid" ng-if="searched && results && results.length">
+    <event-card ng-repeat="event in results track by event.event_id" event="event"></event-card>
+</div>
+
+<div class="empty" ng-if="searched && results && !results.length && !loading">
+    <span class="big">😕</span>
+    No charity events matched your filters. Try broadening your search.
+</div>

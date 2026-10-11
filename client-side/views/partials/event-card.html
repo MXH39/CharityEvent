@@ -1,0 +1,27 @@
+<!-- Reusable event summary card (used by the Home page and the Search results) -->
+<article class="card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <h4>{{ event.event_title }}</h4>
+        <span class="badge badge-cat">{{ event.category_name }}</span>
+    </div>
+
+    <p class="desc">{{ event.event_description || 'Details for this charity event will be announced soon.' }}</p>
+
+    <dl>
+        <dt>Date</dt><dd>{{ event.event_date | eventDate }}</dd>
+        <dt>Location</dt><dd>{{ event.location }}</dd>
+        <dt>Ticket</dt>
+        <dd>
+            <span ng-if="event.ticket_price > 0">{{ event.ticket_price | money }}</span>
+            <span ng-if="event.ticket_price == 0" class="badge badge-free">Free entry</span>
+        </dd>
+        <dt>Tickets sold</dt><dd>{{ event.tickets_sold || 0 }}</dd>
+    </dl>
+
+    <progress-bar value="event.current_progress" max="event.fundraising_goal"></progress-bar>
+
+    <div class="actions">
+        <a class="btn btn-sm" ng-href="#/events/{{ event.event_id }}">View details</a>
+        <a class="btn btn-sm btn-accent" ng-href="#/register/{{ event.event_id }}">Register</a>
+    </div>
+</article>
