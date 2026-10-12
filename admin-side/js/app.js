@@ -63,6 +63,11 @@
 
         // Hash routing keeps deep links working on a plain Apache/cPanel folder.
         $locationProvider.html5Mode(false);
+
+        // AngularJS 1.6 changed the default hash prefix from '' to '!'. Without
+        // this line AngularJS rewrites '#/dashboard' into '#!/dashboard' and the
+        // plain href="#/..." sidebar links stop changing the route.
+        $locationProvider.hashPrefix('');
     }
 
     /** Keeps the tab title in sync and provides the sidebar highlight helper. */

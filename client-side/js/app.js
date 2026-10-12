@@ -65,6 +65,13 @@
         // into a normal Apache/PHP folder on the SCU cPanel, where a <base href>
         // rewrite rule for HTML5 mode may not be available.
         $locationProvider.html5Mode(false);
+
+        // AngularJS 1.6 changed the default hash prefix from '' to '!', which
+        // rewrites '#/home' into '#!/home' and silently breaks every plain
+        // href="#/..."
+        // navigation link in the templates. Restoring the empty prefix keeps the
+        // clean '#/home' style URLs used throughout this project.
+        $locationProvider.hashPrefix('');
     }
 
     /**
